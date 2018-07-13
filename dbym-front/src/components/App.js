@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Router, Route, Link, Switch } from 'react-router-dom';
 import FBLogin from './FBLogin';
+import Create from './Create';
 import './App.css';
 
 class App extends Component {
@@ -20,6 +21,7 @@ class App extends Component {
     return (
       <div className="App">
         <FBLogin />
+        <Create hostId={this.state.fbId}/>
       </div>
     );
   }

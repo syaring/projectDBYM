@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import loginImg from '../fblogin.png';
+import loginImg from '../image/fblogin.png';
 import axios from 'axios';
 
 const FB = window.FB;
@@ -26,10 +26,10 @@ class FBLogin extends Component {
           console.log(this.friendList);
           
           axios.post('http://localhost:8080/user', {
-            user_fbid: this.fbId,
-            user_name: this.useName,
-            user_email: this.userEmail,
-            user_friends: this.friendList
+            userFbid: this.fbId,
+            userName: this.useName,
+            userEmail: this.userEmail,
+            userFriends: this.friendList
           });
         }); 
       }

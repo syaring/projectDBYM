@@ -5,6 +5,9 @@ var cors = require('cors');
 const USERS = [
 ];
 
+const MEETUPS = [
+];
+
 let id = 0;
 
 /* GET home page. */
@@ -19,13 +22,12 @@ router.get('/users', cors(), function (req, res, next) {
 });
 
 router.post('/user', cors(), function (req, res, next) {
-  console.log(req.body.user_friends);
   const newUser = {
     uid: ++id,
-    user_fbid: req.body.user_fbid,
-    user_name: req.body.user_name,
-    user_email: req.body.user_email,
-    user_friends: req.body.user_friends
+    userFbid: req.body.userFbid,
+    userName: req.body.userName,
+    userEmail: req.body.userEmail,
+    userFriends: req.body.userFriends
   };
 
   USERS.push(newUser);
@@ -51,8 +53,38 @@ router.put('/user/:id', cors(), function (req, res, next) {
   res.status(200).end();
 });
 
+router.get('/user:id', cors(), function (req, res, next){
+  res.json({
+    user: USERS[0]
+  })
+});
+
 router.options('/user/:id', cors(), function (req, res, next){
   res.status(200).end();
-})
+});
+
+router.get('/meetups', cors(), function (req, res, next) {
+  res.json({
+    meetups: MEETUPS
+  });
+});
+
+router.post('/meetup', cors(), function (req, res, next) {
+  const newMeetUp = {
+    hostId: req.body.hostId,
+    hotPlaces: req.body.hotPlaces,
+    guests: req.body.guests,
+    category: req.body.category,
+    myLoctation: req.body.myLoctation
+  };
+
+  MEETUPS.push(newMeetUp);
+
+  res.json(newMeetUp);
+});
+
+router.options('/meetup', cors(), function (req, res, next) {
+  res.status(200).end();
+});
 
 module.exports = router;
