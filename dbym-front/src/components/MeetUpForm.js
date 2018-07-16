@@ -88,6 +88,7 @@ class MeetUpForm extends Component {
   render() {
     return (
       <div className="MeetUpForm">
+        <button onClick={this.getMyLocation.bind(this)}>내 위치 입력</button>
         ---------------------지하철 리스트---------------------
         <div>
           {
@@ -130,7 +131,6 @@ class MeetUpForm extends Component {
           <li>술집</li>
           <li>카페</li>
         </div>
-        <button onClick={this.getMyLocation.bind(this)}>내 위치 입력</button>
         <button onClick={this.sendGroupInfo.bind(this)}>createMeetups</button>
       </div>
     );

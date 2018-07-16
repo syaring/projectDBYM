@@ -89,7 +89,6 @@ router.options('/user', cors(), function (req, res, next) {
   res.status(200).end();
 });
 
-
 router.get('/friends/:fbId', cors(), function (req, res, next) {
   var friends = [];
 
@@ -200,38 +199,12 @@ router.post('/meetups', cors(), function (req, res, next) {
   }
 });
 
-  router.put('/meetups/:user_id', cors(), function (req, res, next) {
-    res.status(200).end();
-  });
+router.put('/meetups/:user_id', cors(), function (req, res, next) {
+  res.status(200).end();
+});
 
-  router.options('/meetups', cors(), function (req, res, next) {
-    res.status(200).end();
-  });
-
-//   newMeetups.save(function(err) {
-//     if(err) {
-//       res.redirect('/');
-//     } else {
-//       res.redirect('/');
-//     }
-//   });
-
-  // const newMeetUp = {
-  //   hostId: req.body.hostId,
-  //   hotPlaces: req.body.hotPlaces,
-  //   guests: req.body.guests,
-  //   category: req.body.category,
-  //   myLoctation: req.body.myLoctation
-  // };
-
-  // MEETUPS.push(newMeetUp);
-
-  // res.json(newMeetUp);
-// });
-
-// router.options('/meetup', cors(), function (req, res, next) {
-//   res.status(200).end();
-// });
-
+router.options('/meetups', cors(), function (req, res, next) {
+  res.status(200).end();
+});
 
 module.exports = router;
