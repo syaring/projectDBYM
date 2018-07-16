@@ -2,10 +2,6 @@ var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
 var bodyParser = require('body-parser');
-{
-  //var cookieParser = require('cookie-parser');
-  //var logger = require('morgan');
-}
 
 // 구글맵프로젝트 ID
 // projectdbym-1531465007286
@@ -19,36 +15,11 @@ var usersRouter = require('./routes/users');
 
 var app = express();
 
-{
-  //mongo db connect
-  // var mongoose = require('mongoose');
-  // const DB_URL = `mongodb://syaring:kim92918@ds135061.mlab.com:35061/dbym-db`;
-  // mongoose.connect(DB_URL, { useNewUrlParser: true });
-
-  // var DB = mongoose.connection;
-
-  // DB.once('open', function () {
-  //   console.log('connected to ' + DB_URL);
-  // });
-
-  // var newSchema = new mongoose.Schema({
-  //   uid: Number,
-  //   user_fbid: String,
-  //   user_name: String,
-  //   user_email: String,
-  //   user_friends: Array[String]
-  // });
-}
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
-{ 
-  // app.use(logger('dev'));
-  // app.use(express.json());
-  // app.use(express.urlencoded({ extended: false }));
-}
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false }));
 //app.use(cookieParser());

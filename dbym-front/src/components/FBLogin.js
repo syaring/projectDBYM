@@ -2,45 +2,39 @@ import React, { Component } from 'react';
 import loginImg from '../image/fblogin.png';
 import axios from 'axios';
 
-const FB = window.FB;
-
 class FBLogin extends Component {
-
-  constructor(props) {
-    super(props);
-
-    this.fbId;
-    this.userName;
-    this.userEmail;
-    this.friendList = [];
-  }
-
-  login() {
-    FB.login(function(response) {
+  facebookLogin() {
+    window.FB.login((response) => {
       if(response.status === 'connected') {
-        FB.api('me?fields=id,name,email,friends', (data) => {
-          this.fbId = data.id;
-          this.userName = data.name;
-          this.userEmail = data.email;
-          this.friendList = data.friends.data;
-          console.log(this.friendList);
-          
+        window.FB.api('me?fields=id,name,email,friends', (data) => {
           axios.post('http://localhost:8080/user', {
-            userFbid: this.fbId,
-            userName: this.useName,
-            userEmail: this.userEmail,
-            userFriends: this.friendList
+            userFbId: data.id,
+            userName: data.name,
+            userEmail: data.email,
+            userFriends: data.friends.data
+          }).then((user) => {
+            this.props.setUserInfo(user.data);
           });
         }); 
       }
     }, {scope: 'public_profile,email,user_friends'});
+  }
 
+  login() {
+    if (!window.FB) {
+      setTimeout(this.login.bind(this), 300);
+    } else {
+      this.facebookLogin();
+    }
   }
 
   render() {
     return (
       <div>
-        <input type="image" src={loginImg} onClick={this.login.bind(this)} />
+        <input type="image"
+          src={loginImg}
+          onClick={this.login.bind(this)}
+        />
       </div>
     );
   }

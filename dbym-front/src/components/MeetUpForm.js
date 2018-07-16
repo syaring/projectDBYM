@@ -8,25 +8,32 @@ class MeetUpForm extends Component {
   constructor(props) {
     super(props);
 
-    this.state = ({
-      places: [],
-      selectedLineList: [],
+    this.state = {
+      hostId: this.props.hostId,
+      hostsFriends: [],
       lineName: "",
+      selectedLineList: [],
       station: "",
-      guests: [],
+      places: [],
+      friends: [],
       category: "",
-      myLocation: ""
-    });
+      myLocation: {}
+    };
+  }
+
+  componentDidMount() {
+    this.getFriendsList();
   }
   
   sendGroupInfo() {
-    axios.post('http://localhost:8080/meetup', {
+    axios.post('http://localhost:8080/meetups', {
       hostId: this.props.hostId,
       hotPlaces: this.state.places,
-      guests: this.state.guests,
+      guests: this.state.friends,
       category: this.state.category,
-      myLoctation: this.state.myLocation
+      myLocation: this.state.myLocation
     });
+    
   }
 
   showStationList(line) {
@@ -52,9 +59,36 @@ class MeetUpForm extends Component {
     }
   }
 
+  setSelectedFriend(friend) {
+    this.setState({
+      friends: [...this.state.friends, friend]
+    })
+  }
+
+  getFriendsList() {
+    axios.get(`http://localhost:8080/friends/${this.props.hostId}`).then((friends) => {
+     this.setState({
+       hostsFriends: friends.data
+     });
+    });
+  }
+
+  getMyLocation() {
+    navigator.geolocation.getCurrentPosition((p)=> {
+      if(p){
+        this.setState({
+          myLocation: {lat: p.coords.latitude, lng: p.coords.longitude}
+        });
+        console.log(this.state.myLocation);
+
+      }
+    });
+  }
+
   render() {
     return (
       <div className="MeetUpForm">
+        ---------------------지하철 리스트---------------------
         <div>
           {
             placeData.map((data, index) => {
@@ -78,8 +112,26 @@ class MeetUpForm extends Component {
             })
           }
         </div>
-
-        <button onClick={this.sendGroupInfo.bind(this)}>createMeetup</button>
+        ---------------------친구 리스트---------------------
+        <div>
+          {
+            this.state.hostsFriends.map((data, index) => {
+              return (
+                <li key={data.id} onClick={this.setSelectedFriend.bind(this, data.id)}>
+                  {data.name}
+                </li>
+              );
+            })
+          }
+        </div>
+        --------------------카테고리---------------------
+        <div>
+          <li>음식점</li>
+          <li>술집</li>
+          <li>카페</li>
+        </div>
+        <button onClick={this.getMyLocation.bind(this)}>내 위치 입력</button>
+        <button onClick={this.sendGroupInfo.bind(this)}>createMeetups</button>
       </div>
     );
   }
