@@ -11,6 +11,7 @@ class MeetUpForm extends Component {
     this.state = {
       hostId: this.props.hostId,
       hostsFriends: [],
+      title: "",
       lineName: "",
       selectedLineList: [],
       station: "",
@@ -25,24 +26,43 @@ class MeetUpForm extends Component {
     this.getFriendsList();
   }
   
+  getFriendsList() {
+    axios.get(`http://localhost:8080/friends/${this.props.hostId}`).then((friends) => {
+     this.setState({
+       hostsFriends: friends.data
+     });
+    });
+  }
+
+  getMyLocation() {
+    navigator.geolocation.getCurrentPosition((p)=> {
+      if(p){
+        this.setState({
+          myLocation: {lat: p.coords.latitude, lng: p.coords.longitude}
+        });
+        console.log(this.state.myLocation);
+      }
+    });
+  }
+
   sendGroupInfo() {
     axios.post('http://localhost:8080/meetups', {
       hostId: this.props.hostId,
+      hostName: this.props.hostName,
+      title: this.state.title,
       hotPlaces: this.state.places,
       guests: this.state.friends,
       category: this.state.category,
       myLocation: this.state.myLocation
     });
-    
   }
 
-  showStationList(line) {
+  setSelectedFriend(friend) {
     this.setState({
-      selectedLineList: line["station"],
-      lineName: line["line"]
+      friends: [...this.state.friends, friend]
     });
   }
-  
+
   setSelectedStation(station) {
     this.setState({
       station: station
@@ -59,36 +79,27 @@ class MeetUpForm extends Component {
     }
   }
 
-  setSelectedFriend(friend) {
+  setTitle(ev) {
     this.setState({
-      friends: [...this.state.friends, friend]
-    })
-  }
-
-  getFriendsList() {
-    axios.get(`http://localhost:8080/friends/${this.props.hostId}`).then((friends) => {
-     this.setState({
-       hostsFriends: friends.data
-     });
+      title: ev.target.value
     });
   }
 
-  getMyLocation() {
-    navigator.geolocation.getCurrentPosition((p)=> {
-      if(p){
-        this.setState({
-          myLocation: {lat: p.coords.latitude, lng: p.coords.longitude}
-        });
-        console.log(this.state.myLocation);
-
-      }
+  showStationList(line) {
+    this.setState({
+      selectedLineList: line["station"],
+      lineName: line["line"]
     });
   }
-
+  
   render() {
     return (
       <div className="MeetUpForm">
-        <button onClick={this.getMyLocation.bind(this)}>내 위치 입력</button>
+        <button onClick={this.getMyLocation.bind(this)}>내 위치 입력</button> <br/>
+        <input type="text" placeholder="방 제목을 입력하세요"
+          value={this.state.title}
+          onChange={this.setTitle.bind(this)}
+        />
         ---------------------지하철 리스트---------------------
         <div>
           {
@@ -118,7 +129,7 @@ class MeetUpForm extends Component {
           {
             this.state.hostsFriends.map((data, index) => {
               return (
-                <li key={data.id} onClick={this.setSelectedFriend.bind(this, data.id)}>
+                <li key={data.id} onClick={this.setSelectedFriend.bind(this, data)}>
                   {data.name}
                 </li>
               );

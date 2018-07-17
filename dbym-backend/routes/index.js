@@ -59,7 +59,7 @@ router.options('/user', cors(), function (req, res, next) {
 router.get('/friends/:fbId', cors(), function (req, res, next) {
   var friends = [];
 
-  User.findOne({"UserFbId": req.params.fbId}, function (err, data) {
+  User.findOne({UserFbId: req.params.fbId}, function (err, data) {
     if (data) {
       friends = _.map(data.UserFriends);
       res.status(200).json(friends);
@@ -67,21 +67,67 @@ router.get('/friends/:fbId', cors(), function (req, res, next) {
   });
 });
 
-router.options('friends/:fbId', cors(), function (req, res, next) {
+router.options('/friends/:fbId', cors(), function (req, res, next) {
   res.status(200).end();
+});
+
+router.get('/userInfo/:fbId', cors(), function (req, res, next) {
+  User.find({UserFbId: req.params.fbId}, function (err, data) {
+    if(data) {
+      res.status(200).json(data);
+    }
+  });
+});
+
+router.options('/userInfo/:fbId', cors(), function (req, res, next) {
+  res.status(200).end();
+})
+
+router.get('/meetups/:fbId', cors(), function (req, res, next) {
+  let meetupsDetails = [];
+
+  let meetups = [];
+
+  User.find({UserFbId: req.params.fbId}, function (err, data){
+    if(data) {
+      meetups = _.map(data[0].MeetUpsList);
+      for(let i = 0 ; i < meetups.length ; i ++) {
+         Meetups.find({_id: meetups[i].meetupsId}, function (err, data){
+          if(data) {
+            meetupsDetails.push({
+              meetupsId: meetups[i].meetupsId,
+              isInvited: meetups[i].isInvited,
+              isEntered: meetups[i].isEnteredLocation,
+              meetupsTitle: data[0].Title,
+              meetupsPlace: data[0].Places,
+              isAllInputSet: data[0].isAllInputSet,
+              MemberList: data[0].MemberList
+            });
+
+            if(meetupsDetails.length === meetups.length) {
+              res.status(200).json(meetupsDetails);
+            }
+          }
+        });
+      }
+    }
+  });
 });
 
 router.post('/meetups', cors(), function (req, res, next) {
   //멤버 리스트 저장
-  let memberList = _.map(req.body.guests, function(id) {
+  let memberList = _.map(req.body.guests, function(data) {
     return{
-      uid: id,
+      uid: data.id,
+      name: data.name,
       location: { lat: 0, lng: 0}
     }
   });
+
   //멤버리스트에 호스트 아이디와 위치 저장
   memberList.push({
     uid: req.body.hostId,
+    name: req.body.hostName,
     location: {
       lat: req.body.myLocation.lat,
       lng: req.body.myLocation.lng
@@ -90,7 +136,9 @@ router.post('/meetups', cors(), function (req, res, next) {
 
   var newMeetups = new Meetups({
     HostId: req.body.hostId,
+    Title: req.body.title,
     HotPlaces: '',
+    Place: '',
     MemberList: memberList,
     Category: req.body.category,
     isAllInputSet: false
@@ -126,8 +174,8 @@ router.post('/meetups', cors(), function (req, res, next) {
             //모임에 초대된 멤버들의 MeetUpsList에 Meetup Schema id 저장
             for(let i = 0 ; i < memberList.length; i ++) {
               let MeetUps = (memberList[i].uid === req.body.hostId) ?
-                {meetupsId: meetupsOId, inInvited: false, isEnteredLocation: true} :
-                {meetupsId: meetupsOId, inInvited: true, isEnteredLocation: false} ;
+                {meetupsId: meetupsOId, isInvited: false, isEnteredLocation: true} :
+                {meetupsId: meetupsOId, isInvited: true, isEnteredLocation: false} ;
 
               User.findOneAndUpdate(
                 { UserFbId: memberList[i].uid },
@@ -153,6 +201,31 @@ router.put('/meetups/:user_id', cors(), function (req, res, next) {
 });
 
 router.options('/meetups', cors(), function (req, res, next) {
+  res.status(200).end();
+});
+
+// router.post('/meetups/location/:mId', cors(), function (req, res, next) {
+//   // Meetups.findOneAndUpdate({_id: req.params.mId, "MemberList.uid": req.body.uid},
+//   // {$inc:{location: {
+//   //   lat: req.body.lat,
+//   //   lng: req.body.lng
+//   // }}});
+//   Meetups.findOne({_id: req.params.mId}.Meetups.uid )
+//   });
+//   // function (err, data) {
+//   //   if(data) {
+//   //     let index = data.MemberList.findIndex(idx => idx.uid === req.body.uid);
+//   //     console.log(data.MemberList[index]);
+//   //     data.MemberList[index].location = {
+//   //       lat: req.body.lat,
+//   //       lng: req.body.lng
+//   //     }
+//   //   }
+//   // });
+//   res.status(200).json({});
+// });
+
+router.options('/meetups/location/:mId', cors(), function (req, res, next) {
   res.status(200).end();
 });
 

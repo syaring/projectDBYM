@@ -66,7 +66,7 @@ class App extends Component {
             <Route path={`/:uid/new`}
               render={props => {
                 return (
-                  <MeetUpForm hostId={props.match.params.uid} />
+                  <MeetUpForm hostId={props.match.params.uid} hostName={this.state.userName}/>
                 );
               }}
             />
