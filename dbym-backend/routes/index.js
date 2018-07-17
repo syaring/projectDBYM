@@ -8,14 +8,6 @@ var _ = require('lodash');
 var User = require('../models/User');
 var Meetups = require('../models/Meetups');
 
-const USERS = [
-];
-
-const MEETUPS = [
-];
-
-let id = 0;
-
 const DB_URL = "mongodb://Admin:dbymadmin123@ds135061.mlab.com:35061/dbym-db"
 mongoose.connect(DB_URL);
 
@@ -25,21 +17,10 @@ DB.once('open', function () {
   console.log('connected to' + DB_URL);
 });
 
-
 /* GET home page. */
 router.get('/', cors(), function(req, res, next) {
   res.render('index', { title: 'Express' });
 });
-
-// router.get('/users', cors(), function (req, res, next) {
-//   res.json({
-//     users: USERS
-//   });
-// });
-
-// router.options('/users', cors(), function (req, res, next) {
-//   res.status(200).end();
-// });
 
 router.post('/user', cors(), function (req, res, next) {
   var newUser = new User({
@@ -49,16 +30,17 @@ router.post('/user', cors(), function (req, res, next) {
     UserFriends: req.body.userFriends,
     MeetUpsLists: []
   });
-  
-  User.findOne ( {"UserFbId": req.body.userFbId }, function (err, user) {
-    if (user) {
+
+  User.find( {UserFbId: req.body.userFbId }, function (err, user) {
+
+    if (!user) {
       newUser = user;
     } else {
-      newUser.save(function(err) {
+      newUser.save(function(err, res) {
         if(err) {
-          res.status(400).json({});
+          return false;
         } else {
-          res.status(200).json({});
+          return true;
         }
       });
     }
@@ -70,21 +52,6 @@ router.put('/user/:user_id', cors(), function (req, res, next) {
   res.status(200).end();
 });
 
-{
-  // router.get('/user/:id', cors(), function (req, res, next) {
-  //   console.log(req.params.id);
-
-  //   User.findOne ({
-  //     "UserFbId": req.params.id
-  //   }, function (err, user) {
-  //     if(user) {
-  //       res.json(user);
-  //       console.log(user);
-  //     }
-  //   });
-  //   res.status(200).json({});
-  // });
-}
 router.options('/user', cors(), function (req, res, next) {
   res.status(200).end();
 });
@@ -103,47 +70,6 @@ router.get('/friends/:fbId', cors(), function (req, res, next) {
 router.options('friends/:fbId', cors(), function (req, res, next) {
   res.status(200).end();
 });
-
-
-
-// router.post('/meetups', cors(), function (req, res, next) {
-//   console.log(req.params);
-//   //User.findOne({"UserFbId": req.params.})
-//   res.json({});
-// });
-
-// router.put('/meetups:user_id', cors(), function (req, res, next) {
-
-// });
-// router.options('/user', cors(), function (req, res, next) {
-//   res.status(200).end();
-// });
-
-// router.put('/user/:id', cors(), function (req, res, next) {
-//   // code goes here..
-//   if (USERS[req.params.id].completed) {
-//     USERS[req.params.id].completed = false;
-//   }else{
-//     USERS[req.params.id].completed = true;
-//   }
-//   res.status(200).end();
-// });
-
-// router.get('/user:id', cors(), function (req, res, next){
-//   res.json({
-//     user: USERS[0]
-//   })
-// });
-
-// router.options('/user/:id', cors(), function (req, res, next){
-//   res.status(200).end();
-// });
-
-// router.get('/meetups', cors(), function (req, res, next) {
-//   res.json({
-//     meetups: MEETUPS
-//   });
-// });
 
 router.post('/meetups', cors(), function (req, res, next) {
   //멤버 리스트 저장
@@ -172,6 +98,7 @@ router.post('/meetups', cors(), function (req, res, next) {
 
   //핫플레이스를 좌표로 변환하여 저장
   let placeList = [];
+  var meetupsOId = '';
 
   for (var i = 0; i < req.body.hotPlaces.length; i++) {
     axios.get(
@@ -186,16 +113,38 @@ router.post('/meetups', cors(), function (req, res, next) {
 
       if (req.body.hotPlaces.length === placeList.length) {
         newMeetups.HotPlaces = placeList;
-
-        newMeetups.save(function(err) {
+        
+        //새 meetups 저장
+        newMeetups.save(function(err, result) {
           if(err) {
             res.status(400).json({});
           } else {
             res.status(200).json({});
+
+            meetupsOId = result._id;
+
+            //모임에 초대된 멤버들의 MeetUpsList에 Meetup Schema id 저장
+            for(let i = 0 ; i < memberList.length; i ++) {
+              let MeetUps = (memberList[i].uid === req.body.hostId) ?
+                {meetupsId: meetupsOId, inInvited: false, isEnteredLocation: true} :
+                {meetupsId: meetupsOId, inInvited: true, isEnteredLocation: false} ;
+
+              User.findOneAndUpdate(
+                { UserFbId: memberList[i].uid },
+                { $push: { MeetUpsList: MeetUps }},
+                function(err, res){
+                  if (err) {
+                    return false;
+                  } else {
+                    return true;
+                  }
+                }
+              );
+            }
           }
-        });
-      }
-    });
+      });
+    }}
+  );
   }
 });
 

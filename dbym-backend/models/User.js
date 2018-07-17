@@ -6,7 +6,7 @@ var UserSchema = mongoose.Schema({
   UserName: String,
   UserEmail: String,
   UserFriends: [{}],
-  MeetUpsList: [] //{meetupId: , invited, inputLocation}
+  MeetUpsList: [] //{meetupId, invited, inputLocation}
 });
 
 module.exports = mongoose.model('User', UserSchema);

@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import { Router, Route, Link, Switch, Redirect } from 'react-router-dom';
 import FBLogin from './FBLogin';
-import Create from './Create';
+import UserPage from './UserPage';
+import MeetUpForm from './MeetUpForm';
 import axios from 'axios';
 import './App.css';
 
@@ -55,11 +56,21 @@ class App extends Component {
           <Route exact path={`/${this.state.fbId}`}
             render={()=>{
               return(
-                <Create hostId={this.state.fbId} />
+                <UserPage userId={this.state.fbId} userName={this.state.userName} />
               )
             }}
           />
         }
+
+        <Switch>
+            <Route path={`/:uid/new`}
+              render={props => {
+                return (
+                  <MeetUpForm hostId={props.match.params.uid} />
+                );
+              }}
+            />
+          </Switch>
       </div>
     );
   }
