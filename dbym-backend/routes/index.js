@@ -22,30 +22,101 @@ router.get('/', cors(), function(req, res, next) {
   res.render('index', { title: 'Express' });
 });
 
-router.post('/user', cors(), function (req, res, next) {
-  var newUser = new User({
-    UserFbId: req.body.userFbId,
-    UserName: req.body.userName,
-    UserEmail: req.body.userEmail,
-    UserFriends: req.body.userFriends,
-    MeetUpsLists: []
-  });
+router.post('/user', cors(), (req, res, next) => {
+  User.findOne({ UserFbId: req.body.userFbId }).then(user => {
+    if (user) {
+      req.body.userFriends.forEach((userData, index) => {
+        User.findOne({ UserFbId: userData.id }).then(friend => {
+          if (friend) {
+          // newUser.userFriends.push(user._id);
+            if (user.UserFriends.indexOf(friend._id) === -1) {
+              user.UserFriends.push(friend._id);
+            }
 
-  User.find( {UserFbId: req.body.userFbId }, function (err, user) {
+            if (index === req.body.userFriends.length - 1) {
+              user.save(function (err, data) {
+                if (err) {
+                  res.status(400).json(err);
+                } else {
+                  res.status(200).json(user);
+                }
+              });
+            }
+          } else {
+            var newFriend = new User({
+              UserName: userData.name,
+              UserFbId: userData.id
+            });
 
-    if (!user) {
-      newUser = user;
-    } else {
-      newUser.save(function(err, res) {
-        if(err) {
-          return false;
+            newFriend.save((err, data) => {
+              user.UserFriends.push(data._id);
+
+              if (req.body.userFriends.length === user.UserFriends) {
+                user.save(function (err, data) {
+                  if (!err) {
+                    res.status(200).json(data);
+                  } else {
+                    res.status(400).json({
+                      error: err
+                    });
+                  }
+                });
+              }
+            });
+          }
+        });
+      });
+
+      return;
+    }
+
+    var newUser = new User({
+      UserFbId: req.body.userFbId,
+      UserName: req.body.userName,
+      UserEmail: req.body.userEmail,
+      UserFriends: []
+    });
+
+    var promise = [];
+    let count = 0;
+
+    req.body.userFriends.forEach((userData, index) => {
+      User.findOne({ UserFbId: userData.id }).then(user => {
+        if (user) {
+          newUser.UserFriends.push(user._id);
+          user.UserFriends.push(newUser._id);
+          promise.push(user.save());
         } else {
-          return true;
+          var newFriend = new User({
+            UserName: userData.name,
+            UserFbId: userData.id
+          });
+
+          promise.push(newFriend.save());
+        }
+
+        count++;
+
+        if (count === req.body.userFriends.length) {
+          Promise.all(promise).then((results) => {
+            results.forEach(result => {
+              if (newUser.UserFriends.indexOf(result._id) === -1) {
+                newUser.UserFriends.push(result._id);
+              }
+            });
+
+            newUser.save((err, data) => {
+              if (err) {
+                res.status(400).json(err);
+              } else {
+                res.status(200).json(data);
+              }
+            });
+          });
         }
       });
-    }
+    });
   });
-  res.json(newUser);
 });
 
 router.put('/user/:user_id', cors(), function (req, res, next) {
@@ -59,11 +130,23 @@ router.options('/user', cors(), function (req, res, next) {
 router.get('/friends/:fbId', cors(), function (req, res, next) {
   var friends = [];
 
-  User.findOne({UserFbId: req.params.fbId}, function (err, data) {
-    if (data) {
-      friends = _.map(data.UserFriends);
-      res.status(200).json(friends);
+  User.findOne({UserFbId: req.params.fbId}, function (err, user) {
+    if (err) {
+      return res.status(400).json({
+        error: 'error'
+      });
     }
+
+    if (!user) {
+      return res.status(400).json({
+        error: 'User Not Found'
+      });
+    }
+
+    User.find().elemMatch('UserFriends', { _id: user._id }).exec((err, results) => {
+      console.log(results);
+      res.status(200).json(results);
+    });
   });
 });
 
@@ -204,6 +287,19 @@ router.options('/meetups', cors(), function (req, res, next) {
   res.status(200).end();
 });
 
+
+router.post('/meetups/location/:mId', cors(), async (req, res, next) => {
+  const meetupId = req.params.mId;
+  const userId = req.body.uid;
+  const lat = req.body.lat;
+  const lng = req.body.lng;
+
+  const meetup = await Meetups.findById(meetupId);
+
+
+
+  res.json({});
+});
 // router.post('/meetups/location/:mId', cors(), function (req, res, next) {
 //   // Meetups.findOneAndUpdate({_id: req.params.mId, "MemberList.uid": req.body.uid},
 //   // {$inc:{location: {

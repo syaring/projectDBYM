@@ -21,7 +21,7 @@ class UserPage extends Component {
         <div>
           Hello {this.state.userName} !! <br/>
           {this.state.userName}님의 약속 <br/>
-          <UserMeetups uid={this.state.userId}/>
+          {/* <UserMeetups uid={this.state.userId}/> */}
           <Link to={`/${this.state.userId}/new`}>
             <input className="New" type="image" src={New} /> <br/>
             click this image for create new meetups!
