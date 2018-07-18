@@ -22,6 +22,7 @@ router.get('/', cors(), function(req, res, next) {
   res.render('index', { title: 'Express' });
 });
 
+//사용자 로그인 및 접속
 router.post('/user', cors(), (req, res, next) => {
   User.findOne({ UserFbId: req.body.userFbId }).then(user => {
     if (user) {
@@ -206,8 +207,8 @@ router.get('/meetups/:fbId', cors(), function (req, res, next) {
   });
 });
 
+//모임 생성
 router.post('/meetups', cors(), function (req, res, next) {
-
   User.findOne({UserFbId: req.body.hostId}, function(err, host) {
     let hostId = host._id;
 
@@ -217,6 +218,21 @@ router.post('/meetups', cors(), function (req, res, next) {
     });
     //멤버리스트에 호스트 oid 저장
     memberList.push(hostId);
+
+    User.findById(hostId, function (err, user) {
+      if (err) {
+        return false;
+      }
+      user.lat = req.body.lat;
+      user.lng = req.body.lng;
+
+      user.save(function (err, updateUser) {
+        if(err){
+          return false;
+        }
+        return true;
+      });
+    });
 
     var newMeetups = new Meetups({
       HostId: hostId,
@@ -267,7 +283,7 @@ router.post('/meetups', cors(), function (req, res, next) {
                   if (err) {
                     return false;
                   }
-                  user.MeetUpsList = MeetUps;
+                  user.MeetUpsList.push(MeetUps);
 
                   user.save(function (err, updateUser) {
                     if(err){
