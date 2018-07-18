@@ -130,23 +130,32 @@ router.options('/user', cors(), function (req, res, next) {
 router.get('/friends/:fbId', cors(), function (req, res, next) {
   var friends = [];
 
-  User.findOne({UserFbId: req.params.fbId}, function (err, user) {
+  User.findOne({UserFbId: req.params.fbId}, function (err, me) {
+
     if (err) {
       return res.status(400).json({
         error: 'error'
       });
     }
 
-    if (!user) {
+    if (!me) {
       return res.status(400).json({
         error: 'User Not Found'
       });
     }
 
-    User.find().elemMatch('UserFriends', { _id: user._id }).exec((err, results) => {
-      console.log(results);
-      res.status(200).json(results);
-    });
+    for(let i = 0 ; i < me.UserFriends.length ; i ++) {
+      User.findOne({_id: me.UserFriends[i]}, function (err, user) {
+        friends.push({
+          userName: user.UserName,
+          userOid: me.UserFriends[i]
+        });
+
+        if(friends.length === me.UserFriends.length) {
+          res.status(200).json({friends});
+        }
+      });
+    }
   });
 });
 
@@ -198,85 +207,83 @@ router.get('/meetups/:fbId', cors(), function (req, res, next) {
 });
 
 router.post('/meetups', cors(), function (req, res, next) {
-  //멤버 리스트 저장
-  let memberList = _.map(req.body.guests, function(data) {
-    return{
-      uid: data.id,
-      name: data.name,
-      location: { lat: 0, lng: 0}
-    }
-  });
 
-  //멤버리스트에 호스트 아이디와 위치 저장
-  memberList.push({
-    uid: req.body.hostId,
-    name: req.body.hostName,
-    location: {
-      lat: req.body.myLocation.lat,
-      lng: req.body.myLocation.lng
-    }
-  });
+  User.findOne({UserFbId: req.body.hostId}, function(err, host) {
+    let hostId = host._id;
 
-  var newMeetups = new Meetups({
-    HostId: req.body.hostId,
-    Title: req.body.title,
-    HotPlaces: '',
-    Place: '',
-    MemberList: memberList,
-    Category: req.body.category,
-    isAllInputSet: false
-  });
+    //멤버들의 oid 매핑
+    let memberList = _.map(req.body.guests, function(data) {
+      return data;
+    });
+    //멤버리스트에 호스트 oid 저장
+    memberList.push(hostId);
 
-  //핫플레이스를 좌표로 변환하여 저장
-  let placeList = [];
-  var meetupsOId = '';
+    var newMeetups = new Meetups({
+      HostId: hostId,
+      Title: req.body.title,
+      HotPlaces: '',
+      Place: '',
+      MemberList: memberList,
+      isAllInputSet: false
+    });
 
-  for (var i = 0; i < req.body.hotPlaces.length; i++) {
-    axios.get(
-      `https://maps.googleapis.com/maps/api/geocode/json?address=
-      ${encodeURI(req.body.hotPlaces[i])}
-      &key=AIzaSyAD7kLRbH0UwpPTNszDx72Fui47lvGjl5w`)
-    .then((data) => {
-      placeList.push({
-        lat: data.data.results[0].geometry.location.lat,
-        lng: data.data.results[0].geometry.location.lng
-      });
+    let placeList = [];
+    var meetupsOId = '';
 
-      if (req.body.hotPlaces.length === placeList.length) {
-        newMeetups.HotPlaces = placeList;
+    //핫플레이스 이름->좌표로 변환후 저장
+    for (var i = 0; i < req.body.hotPlaces.length; i++) {
+      axios.get(
+        `https://maps.googleapis.com/maps/api/geocode/json?address=
+        ${encodeURI(req.body.hotPlaces[i])}
+        &key=AIzaSyAD7kLRbH0UwpPTNszDx72Fui47lvGjl5w`)
+      .then((data) => {
+        placeList.push({
+          lat: data.data.results[0].geometry.location.lat,
+          lng: data.data.results[0].geometry.location.lng
+        });
+
+        //비동기.. 핫플에 대한 모든 좌표를 받아왔을 경우에 진행
+        if (req.body.hotPlaces.length === placeList.length) {
+          newMeetups.HotPlaces = placeList;
         
-        //새 meetups 저장
-        newMeetups.save(function(err, result) {
-          if(err) {
-            res.status(400).json({});
-          } else {
-            res.status(200).json({});
+          //새 meetups 저장
+          newMeetups.save(function(err, result) {
+            if(err) {
+              res.status(400).json({
+                err: 'error'
+              });
+            } else {
+              //저장된 Meetups 값 반환
+              meetupsOId = result._id;
 
-            meetupsOId = result._id;
+              //모임에 초대된 멤버들의 MeetUpsList에 Meetup Schema id 저장
+              for(let i = 0 ; i < memberList.length; i ++) {
+                //console.log(memberList[i]);
+                let MeetUps = (memberList[i] === hostId) ?
+                  {meetupsId: meetupsOId, isInvited: false, isEntered: true} :
+                  {meetupsId: meetupsOId, isInvited: true, isEntered: false} ;
 
-            //모임에 초대된 멤버들의 MeetUpsList에 Meetup Schema id 저장
-            for(let i = 0 ; i < memberList.length; i ++) {
-              let MeetUps = (memberList[i].uid === req.body.hostId) ?
-                {meetupsId: meetupsOId, isInvited: false, isEnteredLocation: true} :
-                {meetupsId: meetupsOId, isInvited: true, isEnteredLocation: false} ;
-
-              User.findOneAndUpdate(
-                { UserFbId: memberList[i].uid },
-                { $push: { MeetUpsList: MeetUps }},
-                function(err, res){
+                User.findById(memberList[i], function (err, user) {
                   if (err) {
                     return false;
-                  } else {
-                    return true;
                   }
-                }
-              );
+                  user.MeetUpsList = MeetUps;
+
+                  user.save(function (err, updateUser) {
+                    if(err){
+                      return false;
+                    }
+                    return true;
+                  });
+                });
+              }
+              res.status(200).json({result});
             }
-          }
-      });
-    }}
-  );
-  }
+          });
+        }}
+      );
+    }
+  })
 });
 
 router.put('/meetups/:user_id', cors(), function (req, res, next) {

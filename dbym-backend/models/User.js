@@ -5,7 +5,7 @@ var UserSchema = mongoose.Schema({
   UserName: String,
   UserEmail: String,
   UserFriends: Array,
-  MeetUpsList: Array, //{meetupId, invited, inputLocation}
+  MeetUpsList: Array, //{meetupId, invited, entered}
   Lat: { type: Number, default: 0 },
   Lng: { type: Number, default: 0 }
 });

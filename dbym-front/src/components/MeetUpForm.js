@@ -18,7 +18,8 @@ class MeetUpForm extends Component {
       places: [],
       friends: [],
       category: "",
-      myLocation: {}
+      myLocation: {},
+      isLoaded: false
     };
   }
 
@@ -28,9 +29,10 @@ class MeetUpForm extends Component {
   
   getFriendsList() {
     axios.get(`http://localhost:8080/friends/${this.props.hostId}`).then((friends) => {
-     this.setState({
-       hostsFriends: friends.data
-     });
+      this.setState({
+        hostsFriends: friends.data,
+        isLoaded: true
+      });
     });
   }
 
@@ -48,11 +50,9 @@ class MeetUpForm extends Component {
   sendGroupInfo() {
     axios.post('http://localhost:8080/meetups', {
       hostId: this.props.hostId,
-      hostName: this.props.hostName,
       title: this.state.title,
       hotPlaces: this.state.places,
       guests: this.state.friends,
-      category: this.state.category,
       myLocation: this.state.myLocation
     });
   }
@@ -124,24 +124,23 @@ class MeetUpForm extends Component {
             })
           }
         </div>
-        ---------------------친구 리스트---------------------
-        <div>
-          {
-            this.state.hostsFriends.map((data, index) => {
-              return (
-                <li key={data.id} onClick={this.setSelectedFriend.bind(this, data)}>
-                  {data.name}
-                </li>
-              );
-            })
-          }
-        </div>
-        --------------------카테고리---------------------
-        <div>
-          <li>음식점</li>
-          <li>술집</li>
-          <li>카페</li>
-        </div>
+        ---------------------친구 리스트--------------------
+        {
+          this.state.isLoaded ?
+          <div>
+            {
+              this.state.hostsFriends.friends.map((data, index) => {
+                return (
+                  <li key={index} onClick={this.setSelectedFriend.bind(this, data.userOid)}>
+                    {data.userName}
+                  </li>
+                );
+              })
+            }
+          </div> :
+          <div>친구목록로딩중</div>
+        }
+
         <button onClick={this.sendGroupInfo.bind(this)}>createMeetups</button>
       </div>
     );
