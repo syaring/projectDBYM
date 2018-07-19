@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
 import { Router, Route, Link, Switch } from 'react-router-dom';
-import Meetups from './Meetups';
+import Meetups from '../Meetups/Meetups';
+import { PulseLoader } from 'halogenium'
 import axios from 'axios';
+import './UserMeetups.css';
 
 class UserMeetups extends Component {
 
@@ -31,21 +33,19 @@ class UserMeetups extends Component {
   render() {
     return (
       <div className="UserMeetups">
-        <div>
-          {
-            this.state.isLoaded ?
-            (<div>
-              {this.state.meetupsList.map((data, index) => {
-                return(
-                    <Meetups key={index} meetupInfo={data} uid={this.state.userId}/>
-                )
-              })}
-            </div>) :
-            (<div>
-              받아오는중~
-            </div>)
-          }
-        </div>
+        {
+          this.state.isLoaded 
+          ?
+          (<div className="meetup-containser">
+            {this.state.meetupsList.map((data, index) => {
+              return(
+                  <Meetups key={index} meetupInfo={data} uid={this.state.userId}/>
+              )
+            })}
+          </div>)
+          :
+            <PulseLoader color="#990DA5" size="15px" margin="10px"/>
+        }
       </div>
     );
   }

@@ -268,7 +268,7 @@ router.post('/meetups', cors(), function (req, res, next) {
 
     //멤버들의 oid 매핑
     let memberList = _.map(req.body.guests, function(data) {
-      return data;
+      return data.userOid;
     });
     //멤버리스트에 호스트 oid 저장
     memberList.push(hostId);

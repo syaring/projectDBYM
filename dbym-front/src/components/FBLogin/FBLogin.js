@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import loginImg from '../image/fblogin.png';
+import loginImg from '../../image/fblogin.png';
 import axios from 'axios';
 
 class FBLogin extends Component {

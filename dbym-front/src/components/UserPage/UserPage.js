@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
 import { Router, Route, Link, Switch } from 'react-router-dom';
-import New from '../image/new.png';
-import UserMeetups from './UserMeetups';
+import New from '../../image/plus.png';
+import UserMeetups from '../UserMeetups/UserMeetups';
 import _ from 'lodash';
+import './UserPage.css';
 
 class UserPage extends Component {
 
@@ -18,14 +19,18 @@ class UserPage extends Component {
   render() {
     return (
       <div className="UserPage">
-        <div>
-          Hello {this.state.userName} !! <br/>
-          {this.state.userName}님의 약속 <br/>
+        <div className="user-title">
+          Hello {this.state.userName} !!
+        </div>
+        <div className="user-contents">
           <UserMeetups uid={this.state.userId}/>
+        </div>
+        <div className="create">
           <Link to={`/${this.state.userId}/new`}>
-            <input className="New" type="image" src={New} /> <br/>
-            click this image for create new meetups!
+            <img className="create-button" src={New} />
           </Link>
+            ^^^<br/>
+            click for mew meetup!
         </div>
       </div>
     );

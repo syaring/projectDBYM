@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import New from '../image/new.png';
+import New from '../../image/new.png';
 import MeetUpForm from './MeetUpForm';
 
 class NewGroup extends Component {
