@@ -17,6 +17,13 @@ DB.once('open', function () {
   console.log('connected to' + DB_URL);
 });
 
+const getCentroid = function (coord) {
+	var center = coord.reduce(function (x,y) {
+		return [x[0] + y[0]/coord.length, x[1] + y[1]/coord.length] 
+	}, [0,0])
+	return center;
+}
+
 /* GET home page. */
 router.get('/', cors(), function(req, res, next) {
   res.render('index', { title: 'Express' });
@@ -128,6 +135,7 @@ router.options('/user', cors(), function (req, res, next) {
   res.status(200).end();
 });
 
+//사용자의 친구 리스트 가져오기
 router.get('/friends/:fbId', cors(), function (req, res, next) {
   var friends = [];
 
@@ -176,29 +184,44 @@ router.options('/userInfo/:fbId', cors(), function (req, res, next) {
   res.status(200).end();
 })
 
+//사용자의 모임 정보 가져오기
 router.get('/meetups/:fbId', cors(), function (req, res, next) {
   let meetupsDetails = [];
-
   let meetups = [];
 
-  User.find({UserFbId: req.params.fbId}, function (err, data){
-    if(data) {
-      meetups = _.map(data[0].MeetUpsList);
+  User.find({UserFbId: req.params.fbId}, function (err, user){
+    if(user) {
+      let uOid = user[0]._id;
+      meetups = _.map(user[0].MeetUpsList);
       for(let i = 0 ; i < meetups.length ; i ++) {
-         Meetups.find({_id: meetups[i].meetupsId}, function (err, data){
+         Meetups.findById(meetups[i].meetupsId, function (err, data){
           if(data) {
-            meetupsDetails.push({
-              meetupsId: meetups[i].meetupsId,
-              isInvited: meetups[i].isInvited,
-              isEntered: meetups[i].isEnteredLocation,
-              meetupsTitle: data[0].Title,
-              meetupsPlace: data[0].Places,
-              isAllInputSet: data[0].isAllInputSet,
-              MemberList: data[0].MemberList
-            });
+            let memberList = [];
+            let count = 0;
 
-            if(meetupsDetails.length === meetups.length) {
-              res.status(200).json(meetupsDetails);
+            for(let j = 0 ; j < data.MemberList.length ; j++ ){
+              User.findById(data.MemberList[j], function (err, usr){
+                if(usr) {
+                  memberList.push(usr.UserName);
+                  count ++;
+                }
+
+                if(count === data.MemberList.length) {
+                  meetupsDetails.push({
+                    meetupsId: meetups[i].meetupsId,
+                    isInvited: meetups[i].isInvited,
+                    isEntered: meetups[i].isEntered,
+                    meetupsTitle: data.Title,
+                    meetupsPlace: data.Places,
+                    isAllInputSet: data.isAllInputSet,
+                    MemberList: memberList
+                  });
+
+                  if(meetupsDetails.length === meetups.length) {
+                    res.status(200).json(meetupsDetails);
+                  }
+                }
+              })
             }
           }
         });
@@ -223,8 +246,9 @@ router.post('/meetups', cors(), function (req, res, next) {
       if (err) {
         return false;
       }
-      user.lat = req.body.lat;
-      user.lng = req.body.lng;
+
+      user.Lat = req.body.myLocation.lat;
+      user.Lng = req.body.myLocation.lng;
 
       user.save(function (err, updateUser) {
         if(err){
@@ -274,7 +298,6 @@ router.post('/meetups', cors(), function (req, res, next) {
 
               //모임에 초대된 멤버들의 MeetUpsList에 Meetup Schema id 저장
               for(let i = 0 ; i < memberList.length; i ++) {
-                //console.log(memberList[i]);
                 let MeetUps = (memberList[i] === hostId) ?
                   {meetupsId: meetupsOId, isInvited: false, isEntered: true} :
                   {meetupsId: meetupsOId, isInvited: true, isEntered: false} ;
@@ -311,40 +334,91 @@ router.options('/meetups', cors(), function (req, res, next) {
 });
 
 
-router.post('/meetups/location/:mId', cors(), async (req, res, next) => {
+//사용자 위치 입력에 따른 DB업데이트
+router.post('/meetups/setloca/:mId', cors(), async (req, res, next) => {
   const meetupId = req.params.mId;
   const userId = req.body.uid;
   const lat = req.body.lat;
   const lng = req.body.lng;
+  const membersLocation = [];
+  //const meetup = await Meetups.findById(meetupId);
 
-  const meetup = await Meetups.findById(meetupId);
+  User.findOne({UserFbId: userId}, function (err, user) {
+    if(user) {
+      let index = user.MeetUpsList.map(function (o) {
+        return o.meetupsId.toString();
+      }).indexOf(meetupId);
 
+      user.Lat = lat;
+      user.Lng = lng;
 
+      const copy = Object.assign({}, user.MeetUpsList[index]);
 
-  res.json({});
+      copy.isEntered = true;
+
+      user.MeetUpsList.set(index, copy);
+
+      user.save(function (err, data) {
+        if (err) {
+          res.status(400).json(err);
+        } else {
+          Meetups.findById(meetupId, function (err, mu) {
+            let members = mu.MemberList.map( function (member) {
+              return member;
+            });
+
+            let trueCount = 0;
+            let count = 0;
+            for(let i = 0 ; i < members.length ; i ++) {
+              User.findById(members[i], function (err, mem) {
+                if(mem) {
+                  let index = mem.MeetUpsList.map(function (o) {
+                    return o.meetupsId.toString();
+                  }).indexOf(meetupId);
+
+                  if (mem.MeetUpsList[index].isEntered) {
+                    trueCount ++;
+                    membersLocation.push({lat: mem.Lat, lng: mem.Lng});
+                  }
+                  count ++;
+                }
+                
+                if(trueCount === members.length){
+                  console.log("모든 사용자가 입력하였습니다");
+                  mu.isAllInputSet = true;
+                  //핫플레이스 계산하기
+                  let memberLocationArr = [];
+                  for(let k = 0 ; k < membersLocation.length ; k ++){
+                    let arr = [membersLocation[i].lat, membersLocation[i].lng];
+                    memberLocationArr.push(arr);
+                  }
+                  console.log(memberLocationArr);
+                  let centerLocation = getCentroid(memberLocationArr);
+
+                  console.log(centerLocation);
+
+                  mu.save(function (e, d) {
+                    if(d) {
+                      res.status(200).json(membersLocation);
+                    }
+                  });
+                } else if(count === members.length) {
+                  res.status(200).json(data);
+                }
+              })
+            }
+          });
+          //res.status(200).json(data);
+        }
+      });
+    }
+  });
 });
-// router.post('/meetups/location/:mId', cors(), function (req, res, next) {
-//   // Meetups.findOneAndUpdate({_id: req.params.mId, "MemberList.uid": req.body.uid},
-//   // {$inc:{location: {
-//   //   lat: req.body.lat,
-//   //   lng: req.body.lng
-//   // }}});
-//   Meetups.findOne({_id: req.params.mId}.Meetups.uid )
-//   });
-//   // function (err, data) {
-//   //   if(data) {
-//   //     let index = data.MemberList.findIndex(idx => idx.uid === req.body.uid);
-//   //     console.log(data.MemberList[index]);
-//   //     data.MemberList[index].location = {
-//   //       lat: req.body.lat,
-//   //       lng: req.body.lng
-//   //     }
-//   //   }
-//   // });
-//   res.status(200).json({});
-// });
+  
+  //isEntered를 확인 후, 사용자의 위치 셋업이 true일 경우, 사용자의 위치 저장하기
+  //해당 밋업의 place를 계산
 
-router.options('/meetups/location/:mId', cors(), function (req, res, next) {
+router.options('/meetups/setloca/:mId', cors(), function (req, res, next) {
   res.status(200).end();
 });
 

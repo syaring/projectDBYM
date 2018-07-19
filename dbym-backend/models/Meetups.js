@@ -5,7 +5,7 @@ var MeetupsSchema = mongoose.Schema({
   Title: String,
   HotPlaces: {},
   Place: String,
-  MemberList: [String], //{id: , name},
+  MemberList: [String],
   isAllInputSet: false
 });
 
