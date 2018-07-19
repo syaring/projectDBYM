@@ -215,43 +215,47 @@ router.get('/meetups/:fbId', cors(), function (req, res, next) {
   let meetupsDetails = [];
   let meetups = [];
 
-  User.find({UserFbId: req.params.fbId}, function (err, user){
+  User.findOne({UserFbId: req.params.fbId}, function (err, user){
     if(user) {
-      let uOid = user[0]._id;
-      meetups = _.map(user[0].MeetUpsList);
-      for(let i = 0 ; i < meetups.length ; i ++) {
-         Meetups.findById(meetups[i].meetupsId, function (err, data){
-          if(data) {
-            let memberList = [];
-            let count = 0;
+      let uOid = user._id;
+      meetups = _.map(user.MeetUpsList);
+      
+      if(meetups.length === 0){
+        res.status(200).json([]);
+      } else {
+        for(let i = 0 ; i < meetups.length ; i ++) {
+          Meetups.findById(meetups[i].meetupsId, function (err, data){
+            if(data) {
+              let memberList = [];
+              let count = 0;
 
-            for(let j = 0 ; j < data.MemberList.length ; j++ ){
-              User.findById(data.MemberList[j], function (err, usr){
-                if(usr) {
-                  memberList.push(usr.UserName);
-                  count ++;
-                }
-
-                if(count === data.MemberList.length) {
-                  console.log('--------', data);
-                  meetupsDetails.push({
-                    meetupsId: meetups[i].meetupsId,
-                    isInvited: meetups[i].isInvited,
-                    isEntered: meetups[i].isEntered,
-                    meetupsTitle: data.Title,
-                    meetupsPlace: data.Place,
-                    isAllInputSet: data.isAllInputSet,
-                    MemberList: memberList
-                  });
-
-                  if(meetupsDetails.length === meetups.length) {
-                    res.status(200).json(meetupsDetails);
+              for(let j = 0 ; j < data.MemberList.length ; j++ ){
+                User.findById(data.MemberList[j], function (err, usr){
+                  if(usr) {
+                    memberList.push(usr.UserName);
+                    count ++;
                   }
-                }
-              })
+
+                  if(count === data.MemberList.length) {
+                    meetupsDetails.push({
+                      meetupsId: meetups[i].meetupsId,
+                      isInvited: meetups[i].isInvited,
+                      isEntered: meetups[i].isEntered,
+                      meetupsTitle: data.Title,
+                      meetupsPlace: data.Place,
+                      isAllInputSet: data.isAllInputSet,
+                      MemberList: memberList
+                    });
+
+                    if(meetupsDetails.length === meetups.length) {
+                      res.status(200).json(meetupsDetails);
+                    }
+                  }
+                })
+              }
             }
-          }
-        });
+          });
+        }
       }
     }
   });
@@ -368,8 +372,7 @@ router.post('/meetups/setloca/:mId', cors(), async (req, res, next) => {
   const lat = req.body.lat;
   const lng = req.body.lng;
   const membersLocation = [];
-  //const meetup = await Meetups.findById(meetupId);
-
+  
   User.findOne({UserFbId: userId}, function (err, user) {
     if(user) {
       let index = user.MeetUpsList.map(function (o) {

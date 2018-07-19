@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Router, Route, Link, Switch } from 'react-router-dom';
+import Meetups from './Meetups';
 import axios from 'axios';
 
 class UserMeetups extends Component {
@@ -26,19 +27,6 @@ class UserMeetups extends Component {
       });
     });
   }
-
-  setMyLocation(mid) {
-    navigator.geolocation.getCurrentPosition((p)=> {
-      if(p){
-        axios.post(`http://localhost:8080/meetups/setloca/${mid}`, {
-          uid: this.state.userId,
-          lat: p.coords.latitude,
-          lng: p.coords.longitude
-        });
-        console.log(p.coords.latitude, p.coords.longitude);
-      }
-    });
-  }
   
   render() {
     return (
@@ -49,21 +37,7 @@ class UserMeetups extends Component {
             (<div>
               {this.state.meetupsList.map((data, index) => {
                 return(
-                  <li key={index}>
-                    {data.isInvited ? <div>초대받은 모임</div> : <div>초대한 모임</div>}
-                    방제 : {data.meetupsTitle} <br/>
-                    멤버 :
-                    {
-                      data.MemberList.map((mem, index) => {
-                        return (
-                          mem+'님 '
-                        )
-                      })
-                    } <br/>
-                    {console.log(data)}
-                    모임 장소 : {data.meetupsPlace ? <div>모임장소 보기</div> : <div>정하는중</div>}
-                    내 위치 : {data.isEntered ? <div>전송완료</div> : <button onClick={this.setMyLocation.bind(this, data.meetupsId)}>내 위치 보내기</button>}
-                  </li>
+                    <Meetups key={index} meetupInfo={data} uid={this.state.userId}/>
                 )
               })}
             </div>) :
@@ -71,7 +45,6 @@ class UserMeetups extends Component {
               받아오는중~
             </div>)
           }
-
         </div>
       </div>
     );
