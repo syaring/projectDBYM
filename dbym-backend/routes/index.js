@@ -22,7 +22,33 @@ const getCentroid = function (coord) {
 		return [x[0] + y[0]/coord.length, x[1] + y[1]/coord.length] 
 	}, [0,0])
 	return center;
-}
+};
+
+const getNearest = function (center, hotplCoords) {
+  debugger
+  var nearest = hotplCoords[0];
+  var distance = Math.sqrt(
+    (Math.pow(center[0]-hotplCoords[0][0])) +
+    (Math.pow(center[1]-hotplCoords[0][1]))
+  );
+  
+  if(hotplCoords.length === 1){
+    return nearest;
+  }
+
+  for(let i = 1 ; i < hotplCoords.length ; i ++){
+    let tmp = Math.sqrt(
+      (Math.pow(center[0] - hotplCoords[i][0])) +
+      (Math.pow(center[1] - hotplCoords[i][1]))
+    );
+
+    if(distance > tmp) {
+      nearest = hotplCoodrs[i];
+    }
+  }
+
+  return nearest;
+};
 
 /* GET home page. */
 router.get('/', cors(), function(req, res, next) {
@@ -207,12 +233,13 @@ router.get('/meetups/:fbId', cors(), function (req, res, next) {
                 }
 
                 if(count === data.MemberList.length) {
+                  console.log('--------', data);
                   meetupsDetails.push({
                     meetupsId: meetups[i].meetupsId,
                     isInvited: meetups[i].isInvited,
                     isEntered: meetups[i].isEntered,
                     meetupsTitle: data.Title,
-                    meetupsPlace: data.Places,
+                    meetupsPlace: data.Place,
                     isAllInputSet: data.isAllInputSet,
                     MemberList: memberList
                   });
@@ -367,6 +394,10 @@ router.post('/meetups/setloca/:mId', cors(), async (req, res, next) => {
               return member;
             });
 
+            let places = mu.HotPlaces.map( (function (station) {
+              return [station.lat, station.lng];
+            }));
+
             let trueCount = 0;
             let count = 0;
             for(let i = 0 ; i < members.length ; i ++) {
@@ -386,20 +417,25 @@ router.post('/meetups/setloca/:mId', cors(), async (req, res, next) => {
                 if(trueCount === members.length){
                   console.log("모든 사용자가 입력하였습니다");
                   mu.isAllInputSet = true;
-                  //핫플레이스 계산하기
+
+                  //********핫플레이스 계산하기********//
                   let memberLocationArr = [];
+                  //멤버들의 위치를 2차원 배열로 저장 [[x, y], [x, y], ..]
                   for(let k = 0 ; k < membersLocation.length ; k ++){
                     let arr = [membersLocation[i].lat, membersLocation[i].lng];
                     memberLocationArr.push(arr);
                   }
-                  console.log(memberLocationArr);
+
+                  //멤버들의 중간지점 계산 [x, y] 형식
                   let centerLocation = getCentroid(memberLocationArr);
-
-                  console.log(centerLocation);
-
+                  //핫플레이스 중 가장 가까운 지점 저장
+                  let place = getNearest(centerLocation, places);
+                  
+                  mu.Place = place;
+                  //let closestStation = [0,0]
                   mu.save(function (e, d) {
                     if(d) {
-                      res.status(200).json(membersLocation);
+                      res.status(200).json({place});
                     }
                   });
                 } else if(count === members.length) {
@@ -408,15 +444,11 @@ router.post('/meetups/setloca/:mId', cors(), async (req, res, next) => {
               })
             }
           });
-          //res.status(200).json(data);
         }
       });
     }
   });
 });
-  
-  //isEntered를 확인 후, 사용자의 위치 셋업이 true일 경우, 사용자의 위치 저장하기
-  //해당 밋업의 place를 계산
 
 router.options('/meetups/setloca/:mId', cors(), function (req, res, next) {
   res.status(200).end();

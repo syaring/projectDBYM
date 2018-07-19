@@ -60,7 +60,8 @@ class UserMeetups extends Component {
                         )
                       })
                     } <br/>
-                    모임 장소 : {data.meetupsPlace ? data.meetupsPlace : <div>정하는중</div>}
+                    {console.log(data)}
+                    모임 장소 : {data.meetupsPlace ? <div>모임장소 보기</div> : <div>정하는중</div>}
                     내 위치 : {data.isEntered ? <div>전송완료</div> : <button onClick={this.setMyLocation.bind(this, data.meetupsId)}>내 위치 보내기</button>}
                   </li>
                 )
