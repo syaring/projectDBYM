@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 import axios from 'axios';
+import Popup from 'reactjs-popup';
+import GoogleMap from '../GoogleMap/GoogleMap';
 import './Meetups.css';
 
 class Meetups extends Component {
@@ -14,7 +16,8 @@ class Meetups extends Component {
       member: this.props.meetupInfo.MemberList,
       place: this.props.meetupInfo.meetupsPlace,
       isEntered: this.props.meetupInfo.isEntered,
-      meetupId: this.props.meetupInfo.meetupsId
+      meetupId: this.props.meetupInfo.meetupsId,
+      
     }
   }
 
@@ -53,7 +56,11 @@ class Meetups extends Component {
           <div className="category">PLACE</div>
           <div className="contents">
             { this.state.place ?
-              <button className="show-place"> show our place ! </button> :
+              <Popup trigger={<button className="show-place">show our place !</button>}
+                position="right center">
+                <GoogleMap location={this.state.place}/>
+              </Popup>
+               :
               '정하는중'
             }
           </div>
@@ -65,7 +72,6 @@ class Meetups extends Component {
               '전송완료' :
               <button type="button"className="loca-button"
                 onClick={this.setMyLocation.bind(this, this.state.meetupId)} >
-                send my Location!
               </button>
             }
           </div>

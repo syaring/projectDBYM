@@ -33,17 +33,50 @@ class App extends Component {
 
   }
 
+  checkLoginStatus() {
+    if (window.FB) {
+      window.FB.getLoginStatus((response) => {
+        if (response.status === 'connected') {
+          axios.get(`http://localhost:8080/userInfo/${response.authResponse.userID}`)
+          .then(({ data })=> {
+            const user = data[0];
+
+            this.setState({
+              isLoggedIn: true,
+              fbId: response.authResponse.userID,
+              userName: user.UserName,
+              userEmail: user.UserEmail,
+              friendList: user.UserFriends,
+              userId: user._id
+            });
+          });
+        } else {
+          this.setState({
+            isLoggedIn: false
+          })
+        }
+      });
+    } else {
+      setTimeout(this.checkLoginStatus.bind(this), 300);
+    }
+  }
+
+  componentDidMount() {
+    this.checkLoginStatus();
+  }
+  
+
   componentDidUpdate() {
     console.log("updated");
   }
 
   render() {
-
     return(
       <div className="App">
         <div className="App-contents">
+          <Switch>
           <Route exact path='/'
-            render={()=>{ 
+            render={()=>{
               return(
                 !this.state.isLoggedIn ? 
                   <FBLogin setUserInfo={this.setUserInfo.bind(this)} /> :
@@ -53,26 +86,28 @@ class App extends Component {
           /> 
 
           {
-            this.state.isLoggedIn &&
-            <Route exact path={`/${this.state.fbId}`}
-              render={()=>{
+            <Route exact path={`/:uid`}
+              render={()=>{ 
                 return(
-                  <UserPage userId={this.state.fbId} userName={this.state.userName} />
+                  this.state.isLoggedIn ?
+                  <UserPage userId={this.state.fbId} userName={this.state.userName} /> :
+                  <Redirect to='/' />
                 )
               }}
             />
           }
 
-          <Switch>
-            <Route path={`/:uid/new`}
+            <Route exact path={`/:uid/new`}
               render={props => {
                 return (
-                  <MeetUpForm hostId={props.match.params.uid} hostName={this.state.userName}/>
+                  this.state.isLoggedIn ?
+                  <MeetUpForm hostId={props.match.params.uid} hostName={this.state.userName}/> :
+                  <Redirect to='/' />
                 );
               }}
             />
-          </Switch>
-        </div>
+            </Switch>
+          </div>
       </div>
     );
   }

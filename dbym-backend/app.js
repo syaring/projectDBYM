@@ -7,7 +7,8 @@ var bodyParser = require('body-parser');
 // projectdbym-1531465007286
 // 프로젝트 번호
 // 1046259602801
-// 제오코딩api : AIzaSyAD7kLRbH0UwpPTNszDx72Fui47lvGjl5w
+// AIzaSyAD7kLRbH0UwpPTNszDx72Fui47lvGjl5w
+// >>>AIzaSyB3GzdWkIgLmw7Ei_QisqgPsjyIVTdX6CE
 //https://maps.googleapis.com/maps/api/geocode/json?address=화정역+3호선&key=AIzaSyAD7kLRbH0UwpPTNszDx72Fui47lvGjl5w
 
 var indexRouter = require('./routes/index');

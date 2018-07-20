@@ -306,7 +306,7 @@ router.post('/meetups', cors(), function (req, res, next) {
       axios.get(
         `https://maps.googleapis.com/maps/api/geocode/json?address=
         ${encodeURI(req.body.hotPlaces[i])}
-        &key=AIzaSyAD7kLRbH0UwpPTNszDx72Fui47lvGjl5w`)
+        &key=AIzaSyB3GzdWkIgLmw7Ei_QisqgPsjyIVTdX6CE`)
       .then((data) => {
         placeList.push({
           lat: data.data.results[0].geometry.location.lat,

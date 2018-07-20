@@ -15,7 +15,6 @@ class FBLogin extends Component {
             userFriends: data.friends.data
           }).then((user) => {
             this.props.setUserInfo(user.data);
-            console.log(data);
           });
         }); 
       }

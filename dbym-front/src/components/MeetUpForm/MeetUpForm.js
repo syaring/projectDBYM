@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import placeData from '../../data/placeData';
+import { Link } from 'react-router-dom';
 import _ from 'lodash';
 import axios from 'axios';
 import './MeetUpForm.css';
@@ -45,7 +46,7 @@ class MeetUpForm extends Component {
         this.setState({
           myLocation: {lat: p.coords.latitude, lng: p.coords.longitude}
         });
-        axios.get(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${p.coords.latitude},${p.coords.longitude}&key=AIzaSyAD7kLRbH0UwpPTNszDx72Fui47lvGjl5w`).then((add) => {
+        axios.get(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${p.coords.latitude},${p.coords.longitude}&key=AIzaSyB3GzdWkIgLmw7Ei_QisqgPsjyIVTdX6CE`).then((add) => {
             this.setState({
               myAddress: add.data.results[0].formatted_address
             });
@@ -159,14 +160,14 @@ class MeetUpForm extends Component {
         <div>
           <div className="options">
             <ul className="navigation">
-              <a className="metro" href="#url">SELECT METRO</a>
+              <a className="metro">SELECT METRO</a>
                 {
                   placeData.map((data, index) => {
                     return (
                       <li className="metro-line"
                         key={index}
                         onClick={this.showStationList.bind(this, data)}>
-                        <a href="#">{data.line}</a>
+                        <a>{data.line}</a>
                       </li>
                     );
                   })
@@ -176,7 +177,7 @@ class MeetUpForm extends Component {
 
           <div className="options">
             <ul className="navigation">
-              <a className="station" href="#">
+              <a className="station">
                 { this.state.lineName ?
                   this.state.lineName : 'STATION'}
               </a>
@@ -186,7 +187,7 @@ class MeetUpForm extends Component {
                     <li className="station-name"
                       key={index}
                       onClick={this.setSelectedStation.bind(this, data)}>
-                      <a href="#">{data}</a>
+                      <a>{data}</a>
                     </li>
                   );
                 })
@@ -196,7 +197,7 @@ class MeetUpForm extends Component {
 
           <div className="options">
             <ul className="navigation">
-              <a className="friend" href="#">MY FRIENDS</a>
+              <a className="friend">MY FRIENDS</a>
                 {
                   this.state.isLoaded &&
                   this.state.hostsFriends.friends.map((data, index) => {
@@ -241,10 +242,12 @@ class MeetUpForm extends Component {
             })
           }
         </div>
-        <button className="create-new-meetups"
-          onClick={this.sendGroupInfo.bind(this)}>
-          CREATE
-        </button>
+        <Link to='/'>
+          <button className="create-new-meetups"
+            onClick={this.sendGroupInfo.bind(this)}>
+            CREATE
+          </button>
+        </Link>
       </div>
     );
   }
