@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { Router, Route, Link, Switch, Redirect } from 'react-router-dom';
 import FBLogin from '../FBLogin/FBLogin';
-import FBLogout from '../FBLogout/FBLogout';
 import UserPage from '../UserPage/UserPage';
 import MeetUpForm from '../MeetUpForm/MeetUpForm';
 import axios from 'axios';
