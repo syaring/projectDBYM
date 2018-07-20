@@ -70,9 +70,14 @@ a:hover {
   transition: 0.3s;
 }
 
+.creat-new {
+  display: inline-block;
+}
+
 .create-new-meetups {
- 	position:fixed;
-	width:80px;
+  position:fixed;
+  display: inline-block;
+  width:80px;
 	height:80px;
 	bottom:40px;
 	right:40px;

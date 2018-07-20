@@ -24,7 +24,7 @@ class Meetups extends Component {
   setMyLocation(mid) {
     navigator.geolocation.getCurrentPosition((p)=> {
       if(p){
-        axios.post(`http://localhost:8080/meetups/setloca/${mid}`, {
+        axios.post(`http://sample-application-development.tzuwucqkx7.us-west-2.elasticbeanstalk.com/meetups/setloca/${mid}`, {
           uid: this.state.uid,
           lat: p.coords.latitude,
           lng: p.coords.longitude

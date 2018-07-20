@@ -22,7 +22,7 @@ class UserMeetups extends Component {
   }
   
   getUserInfo() {
-    axios.get(`http://localhost:8080/meetups/${this.props.uid}`).then((meet)=>{
+    axios.get(`http://sample-application-development.tzuwucqkx7.us-west-2.elasticbeanstalk.com/meetups/${this.props.uid}`).then((meet)=>{
       this.setState({
         meetupsList: meet.data,
         isLoaded: true

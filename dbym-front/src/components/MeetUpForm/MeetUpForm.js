@@ -32,7 +32,7 @@ class MeetUpForm extends Component {
   }
   
   getFriendsList() {
-    axios.get(`http://localhost:8080/friends/${this.props.hostId}`).then((friends) => {
+    axios.get(`http://sample-application-development.tzuwucqkx7.us-west-2.elasticbeanstalk.com/friends/${this.props.hostId}`).then((friends) => {
       this.setState({
         hostsFriends: friends.data,
         isLoaded: true
@@ -56,7 +56,7 @@ class MeetUpForm extends Component {
   }
   
   sendGroupInfo() {
-    axios.post('http://localhost:8080/meetups', {
+    axios.post('http://sample-application-development.tzuwucqkx7.us-west-2.elasticbeanstalk.com/meetups', {
       hostId: this.props.hostId,
       title: this.state.title,
       hotPlaces: this.state.places,
@@ -237,20 +237,21 @@ class MeetUpForm extends Component {
               return (
                 <div key={index}
                   className="selected-friend"
-                  onClick={this.deleteFriend.bind(this, friend)}
-                >
+                  onClick={this.deleteFriend.bind(this, friend)}>
                   {friend.userName}
                 </div>
               );
             })
           }
         </div>
-        <Link to='/'>
-          <button className="create-new-meetups"
-            onClick={this.sendGroupInfo.bind(this)}>
-            CREATE
-          </button>
-        </Link>
+        <div className="create-new">
+          <Link to='/'>
+            <button className="create-new-meetups"
+              onClick={this.sendGroupInfo.bind(this)}>
+              CREATE
+            </button>
+          </Link>
+        </div>
       </div>
     );
   }

@@ -7,7 +7,7 @@ class FBLogin extends Component {
     window.FB.login((response) => {
       if(response.status === 'connected') {
         window.FB.api('me?fields=id,name,email,friends', (data) => {
-          axios.post('http://localhost:8080/user', {
+          axios.post('http://sample-application-development.tzuwucqkx7.us-west-2.elasticbeanstalk.com/user', {
             userFbId: data.id,
             userName: data.name,
             userEmail: data.email,
