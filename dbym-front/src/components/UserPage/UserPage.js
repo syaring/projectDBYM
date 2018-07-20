@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import { Router, Route, Link, Switch } from 'react-router-dom';
 import New from '../../image/plus.png';
 import UserMeetups from '../UserMeetups/UserMeetups';
-import _ from 'lodash';
 import './UserPage.css';
 
 class UserPage extends Component {
@@ -30,7 +29,7 @@ class UserPage extends Component {
             <img className="create-button" src={New} />
           </Link>
             ^^^<br/>
-            click for mew meetup!
+            click for new meetup!
         </div>
       </div>
     );

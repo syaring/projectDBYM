@@ -83,6 +83,10 @@ a:hover {
 	box-shadow: 2px 2px 3px #323232;
 }
 
+.create-new-meetups:hover {
+  cursor: pointer;
+}
+
 .navigation {
   list-style: none;
   position: relative;
@@ -94,6 +98,9 @@ a:hover {
   background: #B200C2;
 }
 
+.metro-line:hover, .station-name:hover {
+  cursor: pointer;
+}
 .navigation, .navigation a.metro {
   border-radius: 4px;
   -webkit-border-radius: 4px;
@@ -104,6 +111,7 @@ a:hover {
   border-radius: 4px 4px 0 0;
   -webkit-border-radius: 4px 4px 0 0;
   -moz-border-radius: 4px 4px 0 0;
+  cursor: pointer;
 }
 
 .navigation a.metro {
@@ -121,6 +129,7 @@ a:hover {
 .navigation:hover a.metro {
   color: rgba(255,255,255,0.6);
   background: rgba(0,0,0,0.04);
+  cursor: pointer;
 }
 
 .navigation, .navigation a.station {
@@ -133,6 +142,7 @@ a:hover {
   border-radius: 4px 4px 0 0;
   -webkit-border-radius: 4px 4px 0 0;
   -moz-border-radius: 4px 4px 0 0;
+  cursor: pointer;
 }
 
 .navigation a.station {
@@ -150,6 +160,7 @@ a:hover {
 .navigation:hover a.station {
   color: rgba(255,255,255,0.6);
   background: rgba(0,0,0,0.04);
+  cursor: pointer;
 }
 
 .navigation, .navigation a.friend {
@@ -162,6 +173,7 @@ a:hover {
   border-radius: 4px 4px 0 0;
   -webkit-border-radius: 4px 4px 0 0;
   -moz-border-radius: 4px 4px 0 0;
+  cursor: pointer;
 }
 
 .navigation a.friend {
@@ -210,4 +222,5 @@ a:hover {
   -webkit-transition:0.2s linear 0s;
   -o-transition:0.2s linear 0s;
   transition:0.2s linear 0s;
+  cursor: pointer;
 }

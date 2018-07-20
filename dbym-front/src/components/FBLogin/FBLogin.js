@@ -1,13 +1,12 @@
 import React, { Component } from 'react';
-import loginImg from '../../image/fblogin.png';
 import axios from 'axios';
+import './FBLogin.css';
 
 class FBLogin extends Component {
   facebookLogin() {
     window.FB.login((response) => {
       if(response.status === 'connected') {
         window.FB.api('me?fields=id,name,email,friends', (data) => {
-          console.log(data.friends.data);
           axios.post('http://localhost:8080/user', {
             userFbId: data.id,
             userName: data.name,
@@ -32,10 +31,12 @@ class FBLogin extends Component {
   render() {
     return (
       <div>
-        <input type="image"
-          src={loginImg}
-          onClick={this.login.bind(this)}
-        />
+        <div className="login-button"
+          type="image"
+          onClick={this.login.bind(this)}>
+          START WITH FACEBOOK!
+        </div>
+
       </div>
     );
   }

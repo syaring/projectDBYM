@@ -29,7 +29,9 @@ class Meetups extends Component {
           lat: p.coords.latitude,
           lng: p.coords.longitude
         });
-        console.log(p.coords.latitude, p.coords.longitude);
+        this.setState({
+          isEntered: true
+        });
       }
     });
   }
@@ -72,6 +74,7 @@ class Meetups extends Component {
               '전송완료' :
               <button type="button"className="loca-button"
                 onClick={this.setMyLocation.bind(this, this.state.meetupId)} >
+                SEND MY LOCATION
               </button>
             }
           </div>

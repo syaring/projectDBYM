@@ -62,6 +62,9 @@ class MeetUpForm extends Component {
       hotPlaces: this.state.places,
       guests: this.state.friends,
       myLocation: this.state.myLocation
+    }, response => {
+      if(response) {
+      }
     });
   }
 

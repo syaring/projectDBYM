@@ -3,17 +3,15 @@ var express = require('express');
 var path = require('path');
 var bodyParser = require('body-parser');
 
-// 구글맵프로젝트 ID
-// projectdbym-1531465007286
-// 프로젝트 번호
-// 1046259602801
-// AIzaSyAD7kLRbH0UwpPTNszDx72Fui47lvGjl5w
-// >>>AIzaSyB3GzdWkIgLmw7Ei_QisqgPsjyIVTdX6CE
-//https://maps.googleapis.com/maps/api/geocode/json?address=화정역+3호선&key=AIzaSyAD7kLRbH0UwpPTNszDx72Fui47lvGjl5w
-
 var indexRouter = require('./routes/index');
 
 var app = express();
+
+if(process.env.NODE_ENV === 'production') {
+  console.log("Production");
+} else {
+  console.log("Development");
+}
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

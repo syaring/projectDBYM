@@ -59,6 +59,7 @@
 .loca-button:hover, .show-place:hover {
   background-color: #7A0085;
   color: white;
+  cursor: pointer;
 }
 
 .loca-button {

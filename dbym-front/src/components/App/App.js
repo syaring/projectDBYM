@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Router, Route, Link, Switch, Redirect } from 'react-router-dom';
 import FBLogin from '../FBLogin/FBLogin';
+import FBLogout from '../FBLogout/FBLogout';
 import UserPage from '../UserPage/UserPage';
 import MeetUpForm from '../MeetUpForm/MeetUpForm';
 import axios from 'axios';
@@ -39,16 +40,18 @@ class App extends Component {
         if (response.status === 'connected') {
           axios.get(`http://localhost:8080/userInfo/${response.authResponse.userID}`)
           .then(({ data })=> {
-            const user = data[0];
+            if(data[0]){
+              const user = data[0];
 
-            this.setState({
-              isLoggedIn: true,
-              fbId: response.authResponse.userID,
-              userName: user.UserName,
-              userEmail: user.UserEmail,
-              friendList: user.UserFriends,
-              userId: user._id
-            });
+              this.setState({
+                isLoggedIn: true,
+                fbId: response.authResponse.userID,
+                userName: user.UserName,
+                userEmail: user.UserEmail,
+                friendList: user.UserFriends,
+                userId: user._id
+              });
+            }
           });
         } else {
           this.setState({
@@ -64,7 +67,6 @@ class App extends Component {
   componentDidMount() {
     this.checkLoginStatus();
   }
-  
 
   componentDidUpdate() {
     console.log("updated");

@@ -62,7 +62,6 @@ router.post('/user', cors(), (req, res, next) => {
       req.body.userFriends.forEach((userData, index) => {
         User.findOne({ UserFbId: userData.id }).then(friend => {
           if (friend) {
-          // newUser.userFriends.push(user._id);
             if (user.UserFriends.indexOf(friend._id) === -1) {
               user.UserFriends.push(friend._id);
             }
